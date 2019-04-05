@@ -43,9 +43,9 @@ public class SplashActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 progressBar.setVisibility(View.GONE);
+                                loginCheck();
                             }
                         });
-                        loginCheck();
                     }
                 }, 2000);
     }
@@ -53,7 +53,9 @@ public class SplashActivity extends AppCompatActivity {
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
-            Toast.makeText(this, "Signed In", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Signed In", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(SplashActivity.this, StudentHomeActivity.class));
+            finish();
         } else {
             startActivityForResult(
                     AuthUI.getInstance()
