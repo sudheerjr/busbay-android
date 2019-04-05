@@ -39,14 +39,18 @@ public class SplashActivity extends AppCompatActivity {
                 new TimerTask() {
                     @Override
                     public void run() {
-                        //if you need some code to run when the delay expires.
-                        progressBar.setVisibility(View.GONE);
+                        runOnUiThread(new TimerTask() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
                         loginCheck();
                     }
                 }, 2000);
     }
-
     private void loginCheck() {
+
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
             Toast.makeText(this, "Signed In", Toast.LENGTH_SHORT);
@@ -77,10 +81,12 @@ public class SplashActivity extends AppCompatActivity {
                     // User pressed back button
                     showSnackbar(getString(R.string.sign_in_cancelled));
                     waitAndTerminate();
+                    return;
                 }
                 if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {
                     showSnackbar(getString(R.string.no_internet_connection));
                     waitAndTerminate();
+                    return;
                 }
                 showSnackbar(getString(R.string.unknown_error));
                 Log.e(TAG, "Sign-in error: ", response.getError());
@@ -103,6 +109,6 @@ public class SplashActivity extends AppCompatActivity {
                         //if you need some code to run when the delay expires
                         finish();
                     }
-                }, 3000);
+                }, 1500);
     }
 }
