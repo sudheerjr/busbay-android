@@ -1,4 +1,4 @@
-package com.afh.busbay;
+package com.afh.busbay.acitivities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,17 +7,30 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.afh.busbay.R;
+import com.afh.busbay.models.User;
+import com.afh.busbay.utils.AppUtils;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import static com.afh.busbay.utils.AppUtils.isCurrentUserFaculty;
+import static com.afh.busbay.utils.AppUtils.saveUserToSharedPref;
+import static com.afh.busbay.utils.FirebaseConstants.BRANCH_USERS;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -54,7 +67,12 @@ public class SplashActivity extends AppCompatActivity {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
             Toast.makeText(this, "Signed In", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(SplashActivity.this, StudentHomeActivity.class));
+            if (AppUtils.isCurrentUserFaculty(this)) {
+
+                startActivity(new Intent(SplashActivity.this, FacultyHomeActivity.class));
+            } else {
+                startActivity(new Intent(SplashActivity.this, StudentHomeActivity.class));
+            }
             finish();
         } else {
             startActivityForResult(
@@ -74,9 +92,8 @@ public class SplashActivity extends AppCompatActivity {
             IdpResponse response = IdpResponse.fromResultIntent(data);
             // Successfully signed in
             if (resultCode == RESULT_OK) {
-                // TODO: Implement function to check usertype from firebase and show the appropriate screen
-                startActivity(new Intent(SplashActivity.this, StudentHomeActivity.class));
-                finish();
+                progressBar.setVisibility(View.VISIBLE);
+                fetchUserInfo();
             } else {
                 // Sign in failed
                 if (response == null) {
@@ -95,6 +112,40 @@ public class SplashActivity extends AppCompatActivity {
                 waitAndTerminate();
             }
         }
+    }
+
+    private void fetchUserInfo() {
+        if (FirebaseAuth.getInstance().getUid() != null) {
+            DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference(BRANCH_USERS).child(FirebaseAuth.getInstance().getUid());
+            usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    User loggedInUser = dataSnapshot.getValue(User.class);
+                    if (loggedInUser != null) {
+                        loggedInUser.setUserId(FirebaseAuth.getInstance().getUid());
+                        saveUserToSharedPref(loggedInUser, SplashActivity.this);
+                        if (isCurrentUserFaculty(SplashActivity.this)) {
+                            startActivity(new Intent(SplashActivity.this, FacultyHomeActivity.class));
+                            finish();
+                        } else {
+                            startActivity(new Intent(SplashActivity.this, StudentHomeActivity.class));
+                            finish();
+                        }
+                    } else {
+                        showSnackbar("Invalid user");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    showSnackbar("Login process was interrupted or failed!");
+                }
+            });
+        } else {
+            showSnackbar("User is not logged in!");
+        }
+
+
     }
 
     private void showSnackbar(String message) {

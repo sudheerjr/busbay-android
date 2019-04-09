@@ -33,21 +33,27 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".BusTrackerActivity"
+            android:name=".acitivities.BusTrackerActivity"
             android:label="@string/title_activity_bus_tracker">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.afh.busbay.StudentHomeActivity" />
+                android:value="com.afh.busbay.acitivities.StudentHomeActivity" />
         </activity>
-        <activity android:name=".AboutActivity" />
-        <activity android:name=".FacultyHomeActivity" />
-        <activity android:name=".StudentHomeActivity" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".acitivities.AboutActivity"
+            android:label="@string/label_about" />
+        <activity
+            android:name=".acitivities.FacultyHomeActivity"
+            android:label="@string/label_faculty_home" />
+        <activity
+            android:name=".acitivities.StudentHomeActivity"
+            android:label="@string/label_student_home" />
+        <activity
+            android:name=".acitivities.SplashActivity"
             android:theme="@style/FullScreenAppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -7,4 +7,7 @@
     <string name="logout">Logout</string>
     <string name="title_activity_bus_tracker">Map</string>
     <string name="locate_bus">Locate my bus</string>
+    <string name="label_student_home">Student</string>
+    <string name="label_faculty_home">Faculty</string>
+    <string name="label_about">About</string>
 </resources>

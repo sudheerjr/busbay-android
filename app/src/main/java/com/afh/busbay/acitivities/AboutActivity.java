@@ -1,6 +1,8 @@
-package com.afh.busbay;
+package com.afh.busbay.acitivities;
 
 import android.os.Bundle;
+
+import com.afh.busbay.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 
