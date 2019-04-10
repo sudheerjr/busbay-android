@@ -27,4 +27,10 @@ public class AppUtils {
         int userType = sharedPreferences.getInt(PREF_USER_TYPE, 0);
         return userType != 0;
     }
+
+    public static String getCurrentUser(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
+        String username = sharedPreferences.getString(PREF_USER_NAME, "");
+        return username;
+    }
 }

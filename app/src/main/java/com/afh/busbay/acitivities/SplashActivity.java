@@ -30,7 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import static com.afh.busbay.utils.AppUtils.isCurrentUserFaculty;
 import static com.afh.busbay.utils.AppUtils.saveUserToSharedPref;
-import static com.afh.busbay.utils.FirebaseConstants.BRANCH_USERS;
+import static com.afh.busbay.utils.FirebaseUtils.BRANCH_USERS;
 
 public class SplashActivity extends AppCompatActivity {
 

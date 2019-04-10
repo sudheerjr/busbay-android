@@ -7,8 +7,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.afh.busbay.R;
+import com.afh.busbay.adapters.AttendanceAdapter;
 import com.afh.busbay.models.Attendance;
-import com.afh.busbay.utils.FirebaseConstants;
+import com.afh.busbay.utils.FirebaseUtils;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,8 +23,13 @@ import com.google.gson.Gson;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static com.afh.busbay.utils.AppConstants.ATTENDANCE_DATA_REQUEST_URL;
 
@@ -31,16 +37,26 @@ public class FacultyHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "FacultyHome";
 
+    private ArrayList<Attendance> attendanceArrayList;
+    private RecyclerView attendanceRecyclerView;
+    private AttendanceAdapter attendanceAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_faculty_home);
+        initialize();
         requestAttendanceData();
+    }
+
+    private void initialize() {
+        attendanceArrayList = new ArrayList<>();
+        attendanceRecyclerView = findViewById(R.id.rec_view_attendance);
     }
 
     private void requestAttendanceData() {
         RequestQueue queue = Volley.newRequestQueue(this);
-        String requestUrl = ATTENDANCE_DATA_REQUEST_URL + FirebaseConstants.getFormattedDate();
+        String requestUrl = ATTENDANCE_DATA_REQUEST_URL + FirebaseUtils.getFormattedDate();
         Log.i(TAG, "requestAttendanceData: " + requestUrl);
         // prepare the Request
         JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, requestUrl, null,
@@ -54,6 +70,7 @@ public class FacultyHomeActivity extends AppCompatActivity {
                         Attendance[] attendanceList = gson.fromJson(jsonString, Attendance[].class);
                         Log.i(TAG, "onResponse: " + attendanceList[0].toString());
                         //TODO: show list in view
+                        showAttendanceList(attendanceList);
                     }
                 },
                 new Response.ErrorListener() {
@@ -67,6 +84,16 @@ public class FacultyHomeActivity extends AppCompatActivity {
 // add it to the RequestQueue
         queue.add(getRequest);
     }
+
+    private void showAttendanceList(Attendance[] attendanceList) {
+        attendanceArrayList.addAll(Arrays.asList(attendanceList));
+        attendanceAdapter = new AttendanceAdapter();
+        attendanceAdapter.setAttendanceArrayList(attendanceArrayList);
+        LinearLayoutManager attendanceLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        attendanceRecyclerView.setLayoutManager(attendanceLayoutManager);
+        attendanceRecyclerView.setAdapter(attendanceAdapter);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

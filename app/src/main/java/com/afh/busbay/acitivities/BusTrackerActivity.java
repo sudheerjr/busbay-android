@@ -1,25 +1,37 @@
 package com.afh.busbay.acitivities;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.afh.busbay.R;
+import com.afh.busbay.models.BusLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
+
+import static com.afh.busbay.utils.FirebaseUtils.BRANCH_BUS_LOCATION;
 
 public class BusTrackerActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private String markerTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bus_tracker);
+        markerTitle = "Loading...";
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -40,9 +52,28 @@ public class BusTrackerActivity extends FragmentActivity implements OnMapReadyCa
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(10.00140, 76.279523);
-        String place = "Pachalam";
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Bus has reached " + place)).showInfoWindow();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 18.0f));
+        DatabaseReference busLocationReference = FirebaseDatabase.getInstance().getReference(BRANCH_BUS_LOCATION);
+        busLocationReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                BusLocation busLocation = dataSnapshot.getValue(BusLocation.class);
+                if (busLocation != null) {
+                    double lat = Double.parseDouble(busLocation.getLat());
+                    double lng = Double.parseDouble(busLocation.getLng());
+                    LatLng lastBusLocation = new LatLng(lat, lng);
+                    mMap.clear();
+                    markerTitle = "Bus last stopped at " + busLocation.getLocationName();
+                    mMap.addMarker(new MarkerOptions().position(lastBusLocation).title(markerTitle)).showInfoWindow();
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastBusLocation, 18.0f));
+                } else {
+                    Toast.makeText(BusTrackerActivity.this, "Bus location service currently unavailable", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(BusTrackerActivity.this, "Bus location service currently unavailable", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
